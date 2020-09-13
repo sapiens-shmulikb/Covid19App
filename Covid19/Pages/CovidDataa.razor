@@ -1,5 +1,69 @@
-﻿<h3>CovidDataa</h3>
+﻿@page "/Covid19"
 
-@code {
 
+@inject IHttpClientFactory _clientFactory
+<h3>Covid Data</h3>
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2">@errorString</div>
+}
+else if(covid19Data is null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>@covid19Data.result.fields[1].id</th>
+                <th>@covid19Data.result.fields[2].id</th>
+                <th>@covid19Data.result.fields[4].id</th>
+                <th>@covid19Data.result.fields[5].id</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var w in covid19Data.result.records)
+            {
+            <tr>
+                <td>@w._id</td>
+                <td>@w.תאריך</td>
+                <td>@w.מאושפזים</td>
+                <td>@w.גילממוצעמאושפזים</td>
+                <td>@w.סטייתתקןגילמאושפזים</td>
+
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {  
+
+    public Covid19Model covid19Data;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://data.gov.il/api/3/action/datastore_search?resource_id=e4bf0ab8-ec88-4f9b-8669-f2cc78273edd&limit=10000");
+
+        // Create a Client
+        var client = _clientFactory.CreateClient();
+
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode) // if the response is successful
+        {
+            covid19Data = await response.Content.ReadFromJsonAsync<Covid19Model>();
+            errorString = null;
+        }
+        else
+        {
+            errorString = $"There was an error getting our Data: {response.ReasonPhrase}";
+        }
+
+    }
 }
