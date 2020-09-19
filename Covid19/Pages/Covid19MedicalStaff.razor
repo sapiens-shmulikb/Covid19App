@@ -1,0 +1,75 @@
+﻿@page "/Covid19MedicalStaff"
+
+@inject IHttpClientFactory _clientFactory
+
+<h3>Covid19 Medical Staff under Quarantine</h3>
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2">@errorString</div>
+}
+else if (covid19MedicalStaffModel is null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>תאריך</th>
+                <th>רופאים חולי קורונה</th>
+                <th>אחיות חולות קורונה</th>
+                <th>סיעודי חולי קורונה</th>
+                <th>רופאים - בידוד</th>
+                <th>אחיות - בידוד</th>
+                <th>סיעוד - בידוד</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var w in covid19MedicalStaffModel.result.records)
+            {
+                <tr>
+                    <td>@w._id</td>
+                    <td>@w.Date</td>
+                    <td>@w.confirmed_cases_physicians</td>
+                    <td>@w.confirmed_cases_nurses</td>
+                    <td>@w.confirmed_cases_other_healthcare_workers</td>
+                    <td>@w.isolated_physicians</td>
+                    <td>@w.isolated_nurses</td>
+                    <td>@w.isolated_other_healthcare_workers</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    public Covid19MedicalStaffModel covid19MedicalStaffModel;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://data.gov.il/api/3/action/datastore_search?resource_id=6253ce68-5f31-4381-bb4e-557260d5c9fc&limit=1000");
+
+        // Create a Client
+        var client = _clientFactory.CreateClient();
+
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode) // if the response is successful
+        {
+            covid19MedicalStaffModel = await response.Content.ReadFromJsonAsync<Covid19MedicalStaffModel>();
+            errorString = null;
+        }
+        else
+        {
+            errorString = $"There was an error getting our Data: {response.ReasonPhrase}";
+        }
+
+    }
+
+}
