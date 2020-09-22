@@ -2,7 +2,7 @@
 
 
 @inject IHttpClientFactory _clientFactory
-<h3>Covid Data</h3>
+<h3>Covid Hospitalization Data</h3>
 
 @if (string.IsNullOrWhiteSpace(errorString) == false)
 {
@@ -16,23 +16,26 @@ else
 {
     <table class="table table-striped">
         <thead class="thead-dark">
-            <tr>
+            <tr style="text-align:center">
                 <th>ID</th>
                 <th>@covid19Data.result.fields[1].id</th>
                 <th>@covid19Data.result.fields[2].id</th>
+                <th>@covid19Data.result.fields[6].id</th>
                 <th>@covid19Data.result.fields[4].id</th>
                 <th>@covid19Data.result.fields[5].id</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach (var w in covid19Data.result.records)
+        <tbody style="align-content:center;text-align:center">
+            @foreach (var w in covid19Data.result.records.Reverse())
             {
             <tr>
                 <td>@w._id</td>
                 <td>@w.תאריך</td>
                 <td>@w.מאושפזים</td>
+                <td>@w.מונשמים</td>
                 <td>@w.גילממוצעמאושפזים</td>
                 <td>@w.סטייתתקןגילמאושפזים</td>
+
 
             </tr>
             }
@@ -52,7 +55,7 @@ else
 
         // Create a Client
         var client = _clientFactory.CreateClient();
-
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
         HttpResponseMessage response = await client.SendAsync(request);
 
         if (response.IsSuccessStatusCode) // if the response is successful
